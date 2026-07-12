@@ -1,0 +1,73 @@
+name: Toyota Fiyat Kontrol
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_mode:
+        description: "change: değişiklik varsa bildir, weekly: rapor gönder, price: anlık fiyat bildir"
+        required: true
+        type: choice
+        default: change
+        options:
+          - change
+          - weekly
+          - price
+  schedule:
+    - cron: "0 * * * *"
+    - cron: "0 9 * * 1"
+
+concurrency:
+  group: toyota-fiyat-takip
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  check-price:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: "requirements.txt"
+      - run: |
+          if [ -s requirements.txt ]; then
+            pip install -r requirements.txt
+          else
+            echo "Ek Python bağımlılığı yok."
+          fi
+      - name: Fiyatı kontrol et
+        env:
+          RUN_MODE: ${{ github.event_name == 'schedule' && github.event.schedule == '0 9 * * 1' && 'weekly' || inputs.run_mode || 'change' }}
+          EMAIL_ENABLED: ${{ secrets.EMAIL_ENABLED }}
+          SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python src/toyota_fiyat_takip.py
+      - name: Fiyat geçmişini kaydet
+        if: success() && hashFiles('data/fiyat_gecmisi.csv') != ''
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "data/fiyat_gecmisi.csv"
+          if git diff --cached --quiet; then
+            echo "Fiyat geçmişinde değişiklik yok."
+          else
+            git commit -m "Fiyat geçmişini güncelle [skip ci]"
+            git push
+          fi
+      - name: İndirilebilir fiyat geçmişini yayınla
+        if: success() && hashFiles('data/fiyat_gecmisi.csv') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: fiyat-gecmisi-${{ github.run_number }}
+          path: "data/fiyat_gecmisi.csv"
+          retention-days: 30
