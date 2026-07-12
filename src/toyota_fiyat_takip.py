@@ -132,6 +132,13 @@ def required(name):
     return value
 
 
+def email_app_password():
+    value = os.getenv("EMAIL_APP_PASSWORD", "").strip() or os.getenv("EMAIL_PASSWORD", "").strip()
+    if not value:
+        raise RuntimeError("Eksik ortam değişkeni: EMAIL_APP_PASSWORD")
+    return value
+
+
 def email_shell(title, subtitle, content, accent="#0071e3"):
     return f"""<!doctype html><html><body style="margin:0;background:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;color:#1d1d1f">
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td align="center" style="padding:40px 16px">
@@ -169,9 +176,9 @@ def send_email(subject, body):
     recipients = [x.strip() for x in required("NOTIFICATION_EMAIL").split(",") if x.strip()]
     msg = MIMEText(body, "html", "utf-8")
     msg["Subject"], msg["From"], msg["To"] = subject, sender, ", ".join(recipients)
-    with smtplib.SMTP(os.getenv("SMTP_SERVER", "smtp.gmail.com"), int(os.getenv("SMTP_PORT", "587"))) as server:
+    with smtplib.SMTP("smtp.gmail.com", 587) as server:
         server.starttls()
-        server.login(sender, required("EMAIL_PASSWORD"))
+        server.login(sender, email_app_password())
         server.sendmail(sender, recipients, msg.as_string())
 
 
