@@ -11,7 +11,7 @@ Toyota Türkiye fiyat XML dosyasından `1.5 Dream Multidrive S` modelinin günce
 
 ## Çalışma mantığı
 
-- Saatlik kontrolde fiyat değişmediyse bildirim göndermez.
+- Günlük kontrolde fiyat değişmediyse bildirim göndermez.
 - Fiyat değişirse CSV'ye kayıt ekler, e-posta ve Telegram bildirimi göndermeyi dener.
 - Pazartesi 12:00 Türkiye saati civarında haftalık rapor gönderir.
 - Manuel çalıştırmada `change`, `weekly` veya `price` modu seçilebilir.
