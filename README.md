@@ -19,13 +19,13 @@ Toyota Türkiye fiyat XML dosyasından `1.5 Dream Multidrive S` modelinin günce
 ## GitHub Secrets
 
 - `EMAIL_ENABLED`
-- `SMTP_SERVER`
-- `SMTP_PORT`
 - `EMAIL_USER`
-- `EMAIL_PASSWORD`
+- `EMAIL_APP_PASSWORD`
 - `NOTIFICATION_EMAIL`
 - `TELEGRAM_TOKEN`
 - `TELEGRAM_CHAT_ID`
+
+E-posta gönderimi Gmail üzerinden yapılır. `EMAIL_APP_PASSWORD`, Google hesabından alınan 16 haneli uygulama şifresidir.
 
 ## Test
 
