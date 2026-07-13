@@ -13,8 +13,10 @@ on:
           - weekly
           - price
   schedule:
-    - cron: "0 7 * * *"
-    - cron: "0 9 * * 1"
+    - cron: "0 10 * * *"
+      timezone: "Europe/Istanbul" # Her gün 10:00 İstanbul saati
+    - cron: "0 12 * * 1"
+      timezone: "Europe/Istanbul" # Pazartesi 12:00 İstanbul saati
 
 concurrency:
   group: toyota-fiyat-takip
@@ -42,7 +44,7 @@ jobs:
           fi
       - name: Fiyatı kontrol et
         env:
-          RUN_MODE: ${{ github.event_name == 'schedule' && github.event.schedule == '0 9 * * 1' && 'weekly' || inputs.run_mode || 'change' }}
+          RUN_MODE: ${{ github.event_name == 'schedule' && github.event.schedule == '0 12 * * 1' && 'weekly' || inputs.run_mode || 'change' }}
           EMAIL_ENABLED: ${{ secrets.EMAIL_ENABLED }}
           EMAIL_USER: ${{ secrets.EMAIL_USER }}
           EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
